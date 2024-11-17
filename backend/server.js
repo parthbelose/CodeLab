@@ -2,33 +2,45 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
-import { codeRouter as codeGeneratorRouter } from "./routes/codeGeneratorRoute.js";
-import {ExecRouter as codeExecutionRouter} from "./routes/codeExecutionCont.js";
+import http from "http";
+import { Server } from "socket.io";
+import { ExecRouter } from "./routes/codeExecutionCont.js";
+import { codeRouter } from "./routes/codeGeneratorRoute.js";
+import { collaborationSockets } from "./sockets/collaboration.js";
 
-dotenv.config(); // Load environment variables
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Create HTTP server and Socket.io instance
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173", // Restrict to requests from localhost:5173
+  },
+});
+
 // Middleware
-app.use(cors()); // CORS with default settings
-app.use(express.json()); // Parse JSON bodies
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev")); // Logging for development
-}
+app.use(cors({ origin: "http://localhost:5173" }));
+app.use(express.json());
+if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
 
 // Routes
-app.use("/editor", codeGeneratorRouter,codeExecutionRouter);
+app.use("/editor", ExecRouter);
+app.use("/editor", codeRouter);
 
-// Global error handler
+// Error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error("Error:", err.message || err);
   res.status(500).json({ error: "An unexpected error occurred." });
 });
 
-// Server listening
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+// Initialize Socket.io collaboration
+collaborationSockets(io);
+
+server.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });
 
 export default app;

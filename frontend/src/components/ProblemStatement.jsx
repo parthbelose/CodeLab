@@ -1,11 +1,15 @@
-// src/components/ProblemStatement.jsx
-import React from 'react';
-import { ResizableBox } from 'react-resizable';
-import { Textarea } from '@chakra-ui/react';
+import React from "react";
+import { ResizableBox } from "react-resizable";
+import { Textarea } from "@chakra-ui/react";
 
 function ProblemStatement({ problem, setProblem }) {
   return (
-    <ResizableBox width={600} height={200} minConstraints={[300, 100]} maxConstraints={[1000, 300]}>
+    <ResizableBox
+      width={600}
+      height={200}
+      minConstraints={[300, 100]}
+      maxConstraints={[1000, 300]}
+    >
       <Textarea
         value={problem}
         onChange={(e) => setProblem(e.target.value)}

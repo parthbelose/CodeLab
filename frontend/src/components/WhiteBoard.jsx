@@ -1,124 +1,83 @@
-// import React, { useRef, useState } from 'react';
-// import { ResizableBox } from 'react-resizable';
-// import { ReactSketchCanvas } from 'react-sketch-canvas';
-// import { Button, Box, Flex } from '@chakra-ui/react';
+import React, { useRef, useState, useCallback, useEffect } from "react";
+import { ReactSketchCanvas } from "react-sketch-canvas";
+import {
+  Button,
+  Box,
+  Flex,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Input,
+} from "@chakra-ui/react";
+import { FaEraser, FaPen, FaUndo, FaRedo, FaDownload } from "react-icons/fa";
+import { ChevronDownIcon } from "@chakra-ui/icons";
+import { useSocket } from "../context/SocketProvider";
 
-// function WhiteBoard() {
-//   const canvasRef = useRef(null); // Reference to the ReactSketchCanvas
-//   const [isErasing, setIsErasing] = useState(false);
-
-//   const toggleErase = () => {
-//     setIsErasing((prev) => {
-//       if (canvasRef.current) {
-//         canvasRef.current.eraseMode(!prev); // Switch between pen and eraser mode
-//       }
-//       return !prev;
-//     });
-//   };
-
-//   const clearCanvas = () => {
-//     if (canvasRef.current) {
-//       console.log("Clearing the canvas...");
-//       canvasRef.current.clearCanvas(); // Clear the canvas
-//     } else {
-//       console.error("Canvas reference is null");
-//     }
-//   };
-
-//   const resetCanvas = () => {
-//     if (canvasRef.current) {
-//       console.log("Resetting the canvas...");
-//       canvasRef.current.resetCanvas(); // Reset the canvas
-//     } else {
-//       console.error("Canvas reference is null");
-//     }
-//   };
-
-//   const undoAction = () => {
-//     if (canvasRef.current) {
-//       canvasRef.current.undo(); // Undo the last action
-//     } else {
-//       console.error("Canvas reference is null");
-//     }
-//   };
-
-//   const redoAction = () => {
-//     if (canvasRef.current) {
-//       canvasRef.current.redo(); // Redo the previous action
-//     } else {
-//       console.error("Canvas reference is null");
-//     }
-//   };
-
-//   return (
-//     <Box>
-//       <ResizableBox width={600} height={400} minConstraints={[300, 200]} maxConstraints={[1000, 600]}>
-//         <div style={{ border: '1px solid #4A5568', borderRadius: 'md', padding: '10px', height: '100%' }}>
-//           <ReactSketchCanvas
-//             ref={canvasRef} // Attach the ref here
-//             style={{ border: '1px solid black' }}
-//             strokeColor="black"
-//             strokeWidth={4}
-//           />
-//         </div>
-//       </ResizableBox>
-//       <Flex mt={2}>
-//         <Button colorScheme={isErasing ? 'red' : 'blue'} onClick={toggleErase} mr={2}>
-//           {isErasing ? 'Switch to Pen Mode' : 'Switch to Erase Mode'}
-//         </Button>
-//         <Button colorScheme="orange" onClick={clearCanvas} mr={2}>
-//           Clear Canvas
-//         </Button>
-//         <Button colorScheme="yellow" onClick={resetCanvas} mr={2}>
-//           Reset Canvas
-//         </Button>
-//         <Button colorScheme="green" onClick={undoAction} mr={2}>
-//           Undo
-//         </Button>
-//         <Button colorScheme="green" onClick={redoAction}>
-//           Redo
-//         </Button>
-//       </Flex>
-//     </Box>
-//   );
-// }
-
-// export default WhiteBoard;
-import React, { useRef, useState, useCallback } from 'react';
-import { ReactSketchCanvas } from 'react-sketch-canvas';
-import { Button, Box, Flex } from '@chakra-ui/react';
-
-function WhiteBoard() {
+function WhiteBoard({ roomId }) {
   const canvasRef = useRef(null);
   const [isErasing, setIsErasing] = useState(false);
+  const [strokeColor, setStrokeColor] = useState("black");
+  const socket = useSocket();
 
-  // Utility function to check canvas reference
-  const withCanvas = useCallback((action) => {
+  const handleCanvasChange = useCallback(async () => {
     if (canvasRef.current) {
-      action(canvasRef.current);
-    } else {
-      console.error("Canvas reference is null");
+      const paths = await canvasRef.current.exportPaths();
+      socket.emit("whiteboard_update", { roomId, paths });
     }
-  }, []);
+  }, [roomId, socket]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("whiteboard_update", ({ paths }) => {
+        if (canvasRef.current) canvasRef.current.loadPaths(paths);
+      });
+
+      socket.on("whiteboard_clear", () => canvasRef.current.clearCanvas());
+      socket.on("whiteboard_reset", () => canvasRef.current.resetCanvas());
+    }
+
+    return () => {
+      socket.off("whiteboard_update");
+      socket.off("whiteboard_clear");
+      socket.off("whiteboard_reset");
+    };
+  }, [socket]);
 
   const toggleErase = useCallback(() => {
     setIsErasing((prev) => {
-      withCanvas((canvas) => canvas.eraseMode(!prev));
+      if (canvasRef.current) canvasRef.current.eraseMode(!prev);
       return !prev;
     });
-  }, [withCanvas]);
+  }, []);
 
-  const clearCanvas = useCallback(() => withCanvas((canvas) => canvas.clearCanvas()), [withCanvas]);
-  const resetCanvas = useCallback(() => withCanvas((canvas) => canvas.resetCanvas()), [withCanvas]);
-  const undoAction = useCallback(() => withCanvas((canvas) => canvas.undo()), [withCanvas]);
-  const redoAction = useCallback(() => withCanvas((canvas) => canvas.redo()), [withCanvas]);
+  const clearCanvas = useCallback(() => {
+    canvasRef.current.clearCanvas();
+    socket.emit("whiteboard_clear", { roomId });
+  }, [roomId, socket]);
+
+  const resetCanvas = useCallback(() => {
+    canvasRef.current.resetCanvas();
+    socket.emit("whiteboard_reset", { roomId });
+  }, [roomId, socket]);
+
+  const undoAction = useCallback(() => canvasRef.current.undo(), []);
+  const redoAction = useCallback(() => canvasRef.current.redo(), []);
+
+  const exportCanvasImage = async () => {
+    const image = await canvasRef.current.exportImage("png");
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = "whiteboard.png";
+    link.click();
+  };
 
   return (
     <Box>
-      {/* Resizable container */}
       <Box
-        resize="both"           // Allows resizing horizontally and vertically
-        overflow="auto"          // Ensures the canvas stays within the container when resized
+        resize="both"
+        overflow="auto"
         border="1px solid #4A5568"
         borderRadius="md"
         p={2}
@@ -131,28 +90,74 @@ function WhiteBoard() {
       >
         <ReactSketchCanvas
           ref={canvasRef}
-          strokeColor="black"
+          strokeColor={strokeColor}
           strokeWidth={4}
-          style={{ width: '100%', height: '100%' }}
+          style={{ width: "100%", height: "100%" }}
+          onChange={handleCanvasChange}
         />
       </Box>
-      {/* Buttons for controls */}
-      <Flex mt={2}>
-        <Button colorScheme={isErasing ? 'red' : 'blue'} onClick={toggleErase} mr={2}>
-          {isErasing ? 'Switch to Pen Mode' : 'Switch to Erase Mode'}
-        </Button>
-        <Button colorScheme="orange" onClick={clearCanvas} mr={2}>
-          Clear Canvas
-        </Button>
-        <Button colorScheme="yellow" onClick={resetCanvas} mr={2}>
-          Reset Canvas
-        </Button>
-        <Button colorScheme="green" onClick={undoAction} mr={2}>
-          Undo
-        </Button>
-        <Button colorScheme="green" onClick={redoAction}>
-          Redo
-        </Button>
+      <Flex mt={2} wrap="wrap">
+        <IconButton
+          icon={isErasing ? <FaPen /> : <FaEraser />}
+          onClick={toggleErase}
+          colorScheme={isErasing ? "red" : "blue"}
+          aria-label="Toggle Erase Mode"
+          mr={2}
+          title={isErasing ? "Switch to Pen Mode" : "Switch to Erase Mode"}
+        />
+        <IconButton
+          icon={<FaUndo />}
+          onClick={undoAction}
+          colorScheme="green"
+          aria-label="Undo"
+          mr={2}
+          title="Undo"
+        />
+        <IconButton
+          icon={<FaRedo />}
+          onClick={redoAction}
+          colorScheme="green"
+          aria-label="Redo"
+          mr={2}
+          title="Redo"
+        />
+        <IconButton
+          icon={<FaDownload />}
+          onClick={exportCanvasImage}
+          colorScheme="teal"
+          aria-label="Save as Image"
+          mr={2}
+          title="Save as Image"
+        />
+
+        <Input
+          type="color"
+          value={strokeColor}
+          onChange={(e) => setStrokeColor(e.target.value)}
+          width="50px"
+          height="auto"
+          p={0}
+          border="none"
+          bg="transparent"
+          cursor="pointer"
+          mr={2}
+          title="Select Stroke Color"
+        />
+
+        <Menu>
+          <MenuButton
+            as={Button}
+            rightIcon={<ChevronDownIcon />}
+            colorScheme="orange"
+            title="More Actions"
+          >
+            More Actions
+          </MenuButton>
+          <MenuList>
+            <MenuItem onClick={clearCanvas}>Clear Canvas</MenuItem>
+            <MenuItem onClick={resetCanvas}>Reset Canvas</MenuItem>
+          </MenuList>
+        </Menu>
       </Flex>
     </Box>
   );

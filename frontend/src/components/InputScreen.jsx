@@ -1,11 +1,15 @@
-// src/components/InputScreen.jsx
-import React from 'react';
-import { ResizableBox } from 'react-resizable';
-import { Textarea } from '@chakra-ui/react';
+import React from "react";
+import { ResizableBox } from "react-resizable";
+import { Textarea } from "@chakra-ui/react";
 
 function InputScreen({ input, setInput }) {
   return (
-    <ResizableBox width={400} height={150} minConstraints={[300, 100]} maxConstraints={[600, 300]}>
+    <ResizableBox
+      width={400}
+      height={150}
+      minConstraints={[300, 100]}
+      maxConstraints={[600, 300]}
+    >
       <Textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
