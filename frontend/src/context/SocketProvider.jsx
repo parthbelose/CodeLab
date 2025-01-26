@@ -9,7 +9,7 @@ export const useSocket = () => useContext(SocketContext);
 
 // Define the provider component
 export const SocketProvider = ({ children }) => {
-  const socket = useMemo(() => io("http://localhost:3000"), []); // Initialize once
+  const socket = useMemo(() => io("https://codelab-backend-1i85.onrender.com"), []); // Initialize once
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
   );
