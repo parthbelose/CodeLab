@@ -13,7 +13,7 @@ import {
   useMeeting,
   useParticipant,
 } from "@videosdk.live/react-sdk";
-import { authToken, createMeeting } from "./API";
+import { getToken, createMeeting } from "./API";
 import ReactPlayer from "react-player";
 
 const COLORS = {
@@ -54,6 +54,7 @@ function Controls() {
     </Box>
   );
 }
+
 function ParticipantView({ participantId }) {
   const micRef = useRef(null);
   const { webcamStream, micStream, webcamOn, micOn, isLocal, displayName } =
@@ -176,12 +177,26 @@ function MeetingView({ meetingId, onMeetingLeave }) {
 
 function Call({ roomId, username }) {
   const [meetingId, setMeetingId] = useState(roomId);
+  const [authToken, setAuthToken] = useState(null);
 
-  const getMeetingAndToken = async (id) => {
-    const newMeetingId =
-      id == null ? await createMeeting({ token: authToken }) : id;
-    setMeetingId(newMeetingId);
-  };
+  useEffect(() => {
+    const fetchTokenAndMeeting = async () => {
+      try {
+        const token = await getToken(); // Fetch the auth token
+        setAuthToken(token);
+
+        // If roomId is null, create a new meeting
+        if (!roomId) {
+          const newMeetingId = await createMeeting({ token });
+          setMeetingId(newMeetingId);
+        }
+      } catch (error) {
+        console.error("Error fetching token or meeting ID:", error);
+      }
+    };
+
+    fetchTokenAndMeeting();
+  }, [roomId]);
 
   const onMeetingLeave = () => setMeetingId(null);
 

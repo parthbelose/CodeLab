@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 import { ExecRouter } from "./routes/codeExecutionCont.js";
 import { codeRouter } from "./routes/codeGeneratorRoute.js";
 import { collaborationSockets } from "./sockets/collaboration.js";
+import { AuthRouter } from "./routes/authRouter.js";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
 // Routes
 app.use("/editor", ExecRouter);
 app.use("/editor", codeRouter);
+app.use("/auth", AuthRouter);
 
 // Error handler
 app.use((err, req, res, next) => {

@@ -4,7 +4,8 @@ import { Modal, Button, Form, Container, Row, Col } from "react-bootstrap";
 import { motion } from "framer-motion";
 import CodelabConsole from "./CodelabConsole";
 import { useSocket } from "../context/SocketProvider"; // Import the Socket context
-import { authToken, createMeeting } from "./API";
+import { getToken, createMeeting } from "./API";
+
 function Home() {
   const navigate = useNavigate();
   const socket = useSocket(); // Access the socket instance from context
@@ -13,6 +14,7 @@ function Home() {
   const [username, setUsername] = useState("");
 
   const handleCreateRoom = async () => {
+    const authToken = getToken();
     if (username.trim()) {
       if (socket) {
         const roomID = await createMeeting(authToken); // Generate a unique room ID

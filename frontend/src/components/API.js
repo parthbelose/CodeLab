@@ -1,8 +1,18 @@
-export const authToken =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlrZXkiOiJiMDMyOGZkZS0xYTdhLTQyOTAtOWEyZC00MWI3YjY2YTg0MjMiLCJwZXJtaXNzaW9ucyI6WyJhbGxvd19qb2luIl0sImlhdCI6MTczMTY3ODc4NywiZXhwIjoxNzM0MjcwNzg3fQ.OulJQdDQ5iyMN17CBIybBS-5I7s7IL48DVr__TKMjhw";
+import axios from "axios";
+
+// Function to fetch token
+export const getToken = async () => {
+  const res = await axios.get("http://localhost:3000/auth/authToken");
+  console.log(res.data)
+  return res.data.token;
+};
 
 // API call to create meeting
 export const createMeeting = async ({ token }) => {
+  // Wait for the token to be resolved
+  const authToken = await getToken(); 
+  console.log(authToken);
+
   const res = await fetch(`https://api.videosdk.live/v2/rooms`, {
     method: "POST",
     headers: {
@@ -11,7 +21,9 @@ export const createMeeting = async ({ token }) => {
     },
     body: JSON.stringify({}),
   });
-  //Destructuring the roomId from the response
+
+  // Destructure roomId from the response
   const { roomId } = await res.json();
+  console.log(roomId);
   return roomId;
 };
