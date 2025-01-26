@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Function to fetch token
 export const getToken = async () => {
-  const res = await axios.get("http://localhost:3000/auth/authToken");
+  const res = await axios.get("https://codelab-backend-1i85.onrender.com/auth/authToken");
   console.log(res.data)
   return res.data.token;
 };

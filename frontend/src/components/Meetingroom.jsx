@@ -113,7 +113,7 @@ function Meetingroom() {
   const runCode = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/editor/executecode",
+        "https://codelab-backend-1i85.onrender.com/editor/executecode",
         { code, language, input }
       );
       setOutput(response.data.stdout);
@@ -126,7 +126,7 @@ function Meetingroom() {
   const generateCode = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/editor/generateCode",
+        "https://codelab-backend-1i85.onrender.com/editor/generateCode",
         { problem, code }
       );
       handleCodeChange(response.data.code);
