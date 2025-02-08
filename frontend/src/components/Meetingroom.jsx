@@ -18,7 +18,7 @@ import OutputScreen from "./OutputScreen";
 import InputScreen from "./InputScreen";
 import LanguageSelect from "./LanguageSelect";
 import ProblemStatement from "./ProblemStatement";
-import WhiteBoard from "./WhiteBoard";
+// import WhiteBoard from "./WhiteBoard";
 import axios from "axios";
 import { useLocation, useParams } from "react-router-dom";
 import { useSocket } from "../context/SocketProvider";
@@ -31,6 +31,7 @@ import React, {
   useCallback,
 } from "react";
 import Call from "./Call";
+import { backendURL } from "../backendurl";
 
 function Meetingroom() {
   const { roomId } = useParams();
@@ -113,7 +114,7 @@ function Meetingroom() {
   const runCode = async () => {
     try {
       const response = await axios.post(
-        "https://codelab-backend-1i85.onrender.com/editor/executecode",
+        `${backendURL}/editor/executecode`,
         { code, language, input }
       );
       setOutput(response.data.stdout);
@@ -126,8 +127,8 @@ function Meetingroom() {
   const generateCode = async () => {
     try {
       const response = await axios.post(
-        "https://codelab-backend-1i85.onrender.com/editor/generateCode",
-        { problem, code }
+        `${backendURL}/editor/generateCode`,
+        { problem, code, language }
       );
       handleCodeChange(response.data.code);
     } catch (error) {
@@ -267,7 +268,7 @@ function Meetingroom() {
                 )}
               </Box>
 
-              <Box bg="#14213D" p={6} borderRadius="lg" shadow="md">
+              {/* <Box bg="#14213D" p={6} borderRadius="lg" shadow="md">
                 <Flex justify="space-between" align="center" mb={2}>
                   <Heading size="md" color="#FFF">
                     Whiteboard
@@ -283,7 +284,7 @@ function Meetingroom() {
                   </Button>
                 </Flex>
                 {isWhiteBoardVisible && <WhiteBoard roomId={roomId} />}
-              </Box>
+              </Box> */}
             </Grid>
 
             <Grid templateColumns="repeat(2, 1fr)" gap={6}>

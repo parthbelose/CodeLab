@@ -18,7 +18,7 @@ function Home() {
     if (username.trim()) {
       if (socket) {
         const roomID = await createMeeting(authToken); // Generate a unique room ID
-        console.log(roomID);
+        // console.log(roomID);
         socket.emit("create_room", { roomId: roomID, username }, () => {
           // Callback on successful room creation
           navigate(`/precall`, { state: { roomId: roomID, username } });
@@ -39,7 +39,7 @@ function Home() {
     if (joinRoomID.trim() && username.trim()) {
       // Navigate to the meeting room with the provided Room ID and username
       socket.emit("join_room", { roomId: joinRoomID, username }, () => {
-        console.log("request sent");
+        // console.log("request sent");
         navigate("/precall", { state: { roomId: joinRoomID, username } });
         setIsJoinModalOpen(false);
       });

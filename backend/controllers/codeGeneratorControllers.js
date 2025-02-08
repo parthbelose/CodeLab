@@ -38,7 +38,7 @@ function formatResponse(response) {
   try {
     // Parse the JSON response directly
     const parsedResponse = JSON.parse(response);
-    console.log("Formatted JSON Response:", parsedResponse);
+    // console.log("Formatted JSON Response:", parsedResponse);
     return parsedResponse;
   } catch (error) {
     console.error("Error formatting response:", error.message);
@@ -48,13 +48,13 @@ function formatResponse(response) {
 
 const generateCode = async (req, res) => {
   try {
-    const { problem, code } = req.body;
-    if (typeof problem !== "string" || typeof code !== "string") {
+    const { problem, code, language } = req.body;
+    if (typeof problem !== "string" || typeof code !== "string" || typeof language !== "string") {
       return res.status(400).json({ error: "Invalid input format." });
     }
 
     const prompt = `
-      Given below is the problem statement. Please generate or complete the provided code with proper comments and clear logic as an experienced developer.
+      Given below is the problem statement. Please generate or complete the provided code in ${language} with proper comments and clear logic as an experienced developer.
       Problem Statement:
       ${problem}
       Code:

@@ -45,13 +45,13 @@ const PreCall = () => {
       const requestAudioVideoPermission = await requestPermission(
         Constants.permission.AUDIO_VIDEO
       );
-      console.log(
-        "request Audio and Video Permissions",
-        requestAudioVideoPermission.get(Constants.permission.AUDIO),
-        requestAudioVideoPermission.get(Constants.permission.VIDEO)
-      );
+      // console.log(
+      //   "request Audio and Video Permissions",
+      //   requestAudioVideoPermission.get(Constants.permission.AUDIO),
+      //   requestAudioVideoPermission.get(Constants.permission.VIDEO)
+      // );
       await checkPermissions("audio_video");
-      console.log("tried getting permission");
+      // console.log("tried getting permission");
       await checkMediaPermission();
     } catch (ex) {
       console.log("Error in requestPermission ", ex);

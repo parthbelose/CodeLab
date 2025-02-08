@@ -1,7 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import morgan from "morgan";
 import http from "http";
 import { Server } from "socket.io";
 import { ExecRouter } from "./routes/codeExecutionCont.js";
@@ -18,14 +17,15 @@ const port = process.env.PORT || 3000;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Restrict to requests from localhost:5173
+    origin: "*", // Allows all origins (Not recommended for production)
+    methods: ["GET", "POST"],
   },
 });
 
+
 // Middleware
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors());
 app.use(express.json());
-if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
 
 // Routes
 app.use("/editor", ExecRouter);
@@ -42,7 +42,7 @@ app.use((err, req, res, next) => {
 collaborationSockets(io);
 
 server.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+  // console.log(`Server running on http://localhost:${port}`);
 });
 
 export default app;
